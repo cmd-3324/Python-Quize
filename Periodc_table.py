@@ -60,6 +60,7 @@
 import os
 import random
 from time import sleep
+from colorama import Fore,Back
 elements = [
     {"atomic_number": 1, "symbol": "H", "name": "Hydrogen"},
     {"atomic_number": 2, "symbol": "He", "name": "Helium"},
@@ -105,26 +106,46 @@ class PeriodicTableQuiz:
         self.counter = 0
         self.correctNum = 0
         self.falseNum = 0
-        self.TrueRate = 0
+        self.TrueRate = 0 
+        self.level = 0
+    # level is basde on nums from 1-3 , 1-easy till 1-10, 2-medium till 1-24 3-Hard till 1-36
+    def get_random_options(self, level, correct_element, key, num_options=5):
+        level = int(level)
+     
+        if level == 1:
+            pool = self.elements[:10]
+        elif level == 2:
+            pool = self.elements[:24]
+        else:
+            pool = self.elements[:36]
 
-    def get_random_options(self, correct_element, key, num_options=5):
         options = set()
         options.add(correct_element[key])
+
+        
         while len(options) < num_options:
-            element = random.choice(self.elements)
-            options.add(element[key])
+            element = random.choice(pool)
+            
+            if element[key] != correct_element[key]:
+                options.add(element[key])
+
         options = list(options)
         random.shuffle(options)
         return options
+
+
+
+
+
     def clearscreen(self):
         sleep(2)
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def ask_question_type1(self):
+    def ask_question_type1(self, level):
         element = random.choice(self.elements)
         symbol = element["symbol"]
         correct_name = element["name"]
-        options = self.get_random_options(element, "name")
+        options = self.get_random_options(level,element, "name")
 
         print(f"\nWhat is the name of the element with symbol '{symbol}'?")
         for i, option in enumerate(options, 1):
@@ -139,18 +160,18 @@ class PeriodicTableQuiz:
         if chosen_name == correct_name:
             self.correctNum += 1
             print("Correct!")
-           
+
         else:
             self.falseNum += 1
             print(f"Wrong! The correct answer is: {correct_name}")
-          
+
         return True
 
-    def ask_question_type2(self):
+    def ask_question_type2(self, level):
         element = random.choice(self.elements)
         name = element["name"]
         correct_symbol = element["symbol"]
-        options = self.get_random_options(element, "symbol")
+        options = self.get_random_options(level,element, "symbol")
 
         print(f"\nWhat is the symbol of the element named '{name}'?")
         for i, option in enumerate(options, 1):
@@ -165,18 +186,18 @@ class PeriodicTableQuiz:
         if chosen_symbol == correct_symbol:
             self.correctNum += 1
             print("Correct!")
-     
+
         else:
             self.falseNum += 1
             print(f"Wrong! The correct answer is: {correct_symbol}")
-  
+
         return True
 
-    def ask_question_type3(self):
+    def ask_question_type3(self, level):
         element = random.choice(self.elements)
         atomic_number = element["atomic_number"]
         correct_name = element["name"]
-        options = self.get_random_options(element, "name")
+        options = self.get_random_options(level,element, "name")
 
         print(f"\nWhat is the name of the element with atomic number '{atomic_number}'?")
         for i, option in enumerate(options, 1):
@@ -191,15 +212,16 @@ class PeriodicTableQuiz:
         if chosen_name == correct_name:
             self.correctNum += 1
             print("Correct!")
-            
+
         else:
             self.falseNum += 1
             print(f"Wrong! The correct answer is: {correct_name}")
-           
+
         return True
 
     def run(self):
         print("Periodic Table Quiz - First 36 Elements")
+        print("Levels are Easy-Mediume,Hard =>1,2,3")
         print("Choose question type:")
         print("1: Given symbol, select name")
         print("2: Given name, select symbol")
@@ -207,6 +229,7 @@ class PeriodicTableQuiz:
 
         while True:
             q_type = input("\nEnter question type (1/2/3) or 'exit' to quit: ").strip().lower()
+            level = input("Enter Level Easy-Mediume,Hard =>1,2,3 :").strip().lower()
             TrueRate = self.TrueRate = (self.correctNum / self.counter) * 100 if self.counter > 0 else 0
 
             if q_type == "exit":
@@ -214,26 +237,25 @@ class PeriodicTableQuiz:
                 print("Thanks for playing!")
                 break
 
-            if q_type not in ("1", "2", "3"):
-                
+            if q_type not in ("1", "2", "3") and level not in ("1","2","3"):
+
                 self.clearscreen()
-                print("Invalid question type. Try again.")
+                print("Invalid question type & level selection. Try again.")
                 continue
 
             if q_type == "1":
-                if self.ask_question_type1():
+                if self.ask_question_type1(level):
                     self.counter += 1
                     self.clearscreen()
             elif q_type == "2":
-                if self.ask_question_type2():
+                if self.ask_question_type2(level):
                     self.counter += 1
                     self.clearscreen()
             else:
-                if self.ask_question_type3():
+                if self.ask_question_type3(level):
                     self.counter += 1
                     self.clearscreen()
 
 if __name__ == "__main__":
     quiz = PeriodicTableQuiz(elements)
     quiz.run()
-
