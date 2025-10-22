@@ -135,15 +135,24 @@ class WeatherApp(QWidget):
     def display_weather(self, data):
         self.temperature_label.setStyleSheet("font-size: 75px;")
 
+      
         temperature_k = data["main"]["temp"]
         temperature_c = temperature_k - 273.15
         temperature_f = (temperature_k * 9 / 5) - 459.67
-        weather_id = data["weather"][0]["id"]
-        weather_description = data["weather"][0]["description"]
 
-        self.temperature_label.setText(f"{temperature_f:.0f}°F")
+       
+        weather_id = data["weather"][0]["id"]
+        weather_description = data["weather"][0]["description"].capitalize()
+        humidity = data["main"]["humidity"]
+        city_name = data["name"]
+        country = data["sys"]["country"]
+
+       
+        self.temperature_label.setText(f"{temperature_c:.1f}°C")
         self.emoji_label.setText(self.get_weather_emoji(weather_id))
-        self.description_label.setText(weather_description)
+        self.description_label.setText(
+            f"{weather_description}\nHumidity: {humidity}%\nLocation: {city_name}, {country}"
+        )
 
     @staticmethod
     def get_weather_emoji(weather_id):
