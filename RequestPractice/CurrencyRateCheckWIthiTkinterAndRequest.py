@@ -53,7 +53,8 @@ class Currency:
             raw_value = price_span.text.strip()
             sanitized_value = re.sub(r"[^\d.]", "", raw_value.replace(",", ""))
             try:
-                self.value = float(sanitized_value)
+                self.value = float(sanitized_value)/100
+        
                 return self.value
             except ValueError:
                 print("Error converting to float.")
@@ -66,7 +67,7 @@ class Currency:
         if self.value is None:
             return "N/A"
         final_value = self.value if amount is None else self.value * amount
-        return f"{final_value:,.0f} ﷼"
+        return f"{final_value:,.0f} Tomans"
 
     def RateChange(self):
         if self.previous_value is None or self.previous_value == 0:

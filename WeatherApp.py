@@ -16,7 +16,7 @@ class WeatherApp(QWidget):
         super().__init__()
         self.city_label = QLabel("Enter City Name: ", self)
         self.city_input = QLineEdit(self)
-        
+
         self.get_weather_button = QPushButton("Get Weather", self)
         self.temperature_label = QLabel(self)
         self.emoji_label = QLabel(self)
@@ -105,7 +105,7 @@ class WeatherApp(QWidget):
                 case 403:
                     self.display_error("Forbidden:\nAccess is denied")
                 case 404:
-                    self.display_error("Not found:\nCity not found")
+                    self.display_error(f"Not found:\nCity '{self.city_input.text()}' not found")
                 case 500:
                     self.display_error("Internal Server Error:\nPlease try again later")
                 case 502:
@@ -135,19 +135,16 @@ class WeatherApp(QWidget):
     def display_weather(self, data):
         self.temperature_label.setStyleSheet("font-size: 75px;")
 
-      
         temperature_k = data["main"]["temp"]
         temperature_c = temperature_k - 273.15
         temperature_f = (temperature_k * 9 / 5) - 459.67
 
-       
         weather_id = data["weather"][0]["id"]
         weather_description = data["weather"][0]["description"].capitalize()
         humidity = data["main"]["humidity"]
         city_name = data["name"]
         country = data["sys"]["country"]
 
-       
         self.temperature_label.setText(f"{temperature_c:.1f}°C")
         self.emoji_label.setText(self.get_weather_emoji(weather_id))
         self.description_label.setText(
