@@ -3,59 +3,6 @@
 # from docx.oxml import parse_xml
 # from docx.oxml.ns import nsdecls
 
-# # === Output path ===
-# output_path = r"E:\EmptyPeriodic.docx"
-
-# # === Create document ===
-# doc = Document()
-
-# # Set narrow margins (≈2 px ≈ 0.07 cm)
-# sections = doc.sections
-# for section in sections:
-#     section.top_margin = Cm(0.07)
-#     section.bottom_margin = Cm(0.07)
-#     section.left_margin = Cm(0.07)
-#     section.right_margin = Cm(0.07)
-#     section.page_height = Cm(29.7)  # A4
-#     section.page_width = Cm(21.0)
-
-# # === Create table: 4 rows × 13 columns ===
-# rows, cols = 4, 13
-# table = doc.add_table(rows=rows, cols=cols)
-# table.autofit = False
-
-# # === Set uniform cell sizes ===
-# cell_width = Cm(21.0 / cols)  # fit width
-# cell_height = Cm(29.7 / (rows + 1))  # fit height roughly
-
-# for row in table.rows:
-#     for cell in row.cells:
-#         cell.width = cell_width
-#         # set height via paragraph spacing trick
-#         cell.paragraphs[0].space_before = Cm(0)
-#         cell.paragraphs[0].space_after = Cm(0)
-#         cell.text = ""  # leave empty
-#         # center text (just to align if you add later)
-#         for p in cell.paragraphs:
-#             p.alignment = 1  # center horizontally
-
-# # === Add thick black border ===
-# tbl = table._element
-# tblBorders = parse_xml(r"""
-# <w:tblBorders %s>
-# <w:top w:val="single" w:sz="12" w:space="0" w:color="000000"/>
-# <w:left w:val="single" w:sz="12" w:space="0" w:color="000000"/>
-# <w:bottom w:val="single" w:sz="12" w:space="0" w:color="000000"/>
-# <w:right w:val="single" w:sz="12" w:space="0" w:color="000000"/>
-# <w:insideH w:val="single" w:sz="6" w:space="0" w:color="000000"/>
-# <w:insideV w:val="single" w:sz="6" w:space="0" w:color="000000"/>
-# </w:tblBorders>
-# """ % nsdecls('w'))
-# tbl.tblPr.tblBorders = tblBorders
-
-# # === Save file ===
-# doc.save(output_path)
-# print(f"✅ Periodic table created at: {output_path}")
 import sys
 import os
 import random
@@ -63,6 +10,8 @@ import threading
 import time
 from time import sleep
 from colorama import Fore, Back
+from tkinter import *
+window = Tk()
 
 elements = [
     {"atomic_number": 1, "symbol": "H", "name": "Hydrogen"},
@@ -305,3 +254,4 @@ class PeriodicTableQuiz:
 if __name__ == "__main__":
     quiz = PeriodicTableQuiz(elements)
     quiz.run()
+    window.mainloop()

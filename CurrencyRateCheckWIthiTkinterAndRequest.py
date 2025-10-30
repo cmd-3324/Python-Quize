@@ -7,14 +7,14 @@ import json
 import os
 
 CACHE_FILE = "currency_rates_cache.json"
-stable_url_path = "https://www.tgju.org/profile/price_"
+stable_url_path = "https://www.tgju.org/currency"
 
 
 class Currency:
     url_map = {
         "USD": f"{stable_url_path}dollar_rl",
         "EUR": f"{stable_url_path}eur",
-        "GBP": f"{stable_url_path}pound",
+        "POUND": f"{stable_url_path}gbp",
         "RUB": f"{stable_url_path}ruble",
         "JPY": f"{stable_url_path}yen",
         "EGP": f"{stable_url_path}egp",

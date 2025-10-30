@@ -32,7 +32,7 @@ def freeze_screen():
     threading.Thread(target=block_input).start()
 
     # Schedule window to close after 60 seconds
-    threading.Timer(10, lambda: close_window(root)).start()
+    threading.Timer(30, lambda: close_window(root)).start()
 
     root.mainloop()
 

@@ -9,8 +9,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 from PyQt5.QtCore import Qt
-
-
+import tkinter.messagebox as mbs
 class WeatherApp(QWidget):
     def __init__(self):
         super().__init__()
