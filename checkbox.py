@@ -1,7 +1,7 @@
 from tkinter import *
 from requests import get, exceptions
 import re
-
+from bs4 import *
 
 class IPInfoApp:
     def __init__(self, root):
@@ -232,15 +232,6 @@ class IPInfoApp:
 
     # ---------- Smart IP Formatter ----------
     def on_ip_change(self, *args):
-        # current = re.sub(r"[^0-9]", "", self.entry_var.get())
-        # groups = []
-        # for i in range(0, len(current), 3):
-        #     groups.append(current[i:i+3])
-        #     if len(groups) == 4:
-        #         break
-        # formatted = ".".join(groups)
-        # if formatted != self.entry_var.get():
-        #     self.entry_var.set(formatted)
         pass
     # ---------- Networking ----------
     def get_data(self, ip: str):
@@ -250,7 +241,7 @@ class IPInfoApp:
             res.raise_for_status()
             return res.json()
         except exceptions.RequestException as e:
-            return {"error": f"🚫 Network Error:\n{e}"}
+            return {"error": f"🚫 Network Error:\n \n{e}"}
         except Exception as e:
             return {"error": f"⚠️ Error:\n{e}"}
 
@@ -261,6 +252,19 @@ class IPInfoApp:
             return res.json().get("ip", "")
         except Exception:
             return ""
+    def getflag(countryCode):
+        url = f"https://api.api-ninjas.com/v1/countryflag?country={countryCode}"
+        headers = {"X-Api-Key": "/lthk+c+HlNj6GLl1+L8+g==woNcBuc0q6p2hmeS"}
+
+        response = get(url, headers=headers)
+        try:
+            if response.status_code:
+                data = response.json()
+                flagaddress = data["square_image_url"]
+                return flagaddress
+        except exceptions.RequestException as e:
+            print("Error:", response.status_code, response.text)
+            return None
 
     def check_ip(self):
         ip = self.entry_var.get().strip()
@@ -275,7 +279,6 @@ class IPInfoApp:
         if data.get("status") != "success":
             self.update_result("❌ Invalid IP or data unavailable.")
             return
-
         field_map = {
             "country": "🏳 Country",
             "regionName": "🗺 Region",
@@ -286,6 +289,7 @@ class IPInfoApp:
             "continentCode": "🌎 Continent Code",
             "lat": "📍 Latitude",
             "lon": "📍 Longitude",
+            
         }
 
         output_lines = [f"🌍 IP: {ip}", ""]

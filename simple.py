@@ -52,5 +52,12 @@ javaButton = Checkbutton(
     command=method,
 )
 javaButton.pack()
-
+page.config(bg="black")
+#-----practicing entry 
+def showname():
+    username = entry_term.get()
+    print(f"WElcome {username}")
+entry_term = Entry(page, font="Arial", fg="lightgreen", bg="black", activebackground="gray")
+showBtn = Button(page,font="Arial", activebackground="yellow", activeforeground="pink" , command=showname)
+entry_term.insert(0, "Python")
 page.mainloop()
