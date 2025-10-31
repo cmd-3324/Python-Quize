@@ -3,6 +3,7 @@ from requests import get, exceptions
 import re
 from PIL import Image, ImageTk
 import io
+# import cairosvg  # to convert SVG to PNG
 
 
 class IPInfoApp:
@@ -20,14 +21,14 @@ class IPInfoApp:
                 "text_bg": "#2b2b2b",
                 "text_fg": "#ffffff",
                 "border": "#3f3f3f",
-                "secondary": "#cccccc",
+                "secondary": "#000000",
             },
             "light": {
                 "bg": "#f7f9fc",
                 "fg": "#1c1c1c",
                 "accent": "#1976D2",
-                "text_bg": "#ffffff",
-                "text_fg": "#000000",
+                "text_bg": "#000000",
+                "text_fg": "#FFFFFF",
                 "border": "#cccccc",
                 "secondary": "#555555",
             },
@@ -104,6 +105,7 @@ class IPInfoApp:
             "continentCode": IntVar(value=0),
             "lat": IntVar(value=0),
             "lon": IntVar(value=0),
+            "org": IntVar(value=0),
         }
         col1 = Frame(checkbox_frame, bg=self.colors["bg"])
         col2 = Frame(checkbox_frame, bg=self.colors["bg"])
@@ -236,69 +238,75 @@ class IPInfoApp:
             res = get("https://api.ipify.org?format=json", timeout=5)
             res.raise_for_status()
             return res.json().get("ip", "")
-        except Exception:
-            return ""
+        except Exception as e:
+            return self.update_result("Somthing went wrong , Contact Us with </ programmers378@gmail.com > 😶 ")
 
     def getflag(self, countryCode):
         try:
             if not countryCode:
                 return None
+
             code = countryCode.strip().lower()
-            api_url = "https://api.api-ninjas.com/v1/countryflag?country={}".format(
-                code
-            )
-            response = get(api_url, headers={'X-Api-Key': '/lthk+c+HlNj6GLl1+L8+g==woNcBuc0q6p2hmeS'})
-            if response.status_code != 200:
-                return None
+            url = f"https://flagcdn.com/w80/{code}.png"
+
+            response = get(url, timeout=5)
+            response.raise_for_status()  # Raise an exception for non-200 responses
+
+            # Open image from bytes
             img = Image.open(io.BytesIO(response.content))
-            img = img.resize((100, 60), Image.ANTIALIAS)
+
+            # Resize with LANCZOS (replaces deprecated ANTIALIAS)
+            img = img.resize((100, 60), Image.LANCZOS)
+
+            # Convert to PhotoImage for Tkinter
             photo = ImageTk.PhotoImage(img)
             return photo
-        except:
+
+        except exceptions.RequestException as e:
+            print(f"Network error while fetching flag: {e}")
             return None
+        except Exception as e:
+            print(f"Flag error: {e}")
+            return None
+
 
     def check_ip(self):
         ip = self.entry_var.get().strip()
-
         if not re.match(r"^\d{1,3}(\.\d{1,3}){3}$", ip):
             self.update_result("⚠️ Please enter a valid IPv4 address (e.g. 8.8.8.8)")
-            return
+
         wastchars = any(c in "!@#$~_+,>?<}{\\/-=" for c in ip)
         if wastchars:
-            self.update_result(
-                "❌ Wrong Syntax: check if syntax is ---- ---- ---- ---- (at least 1 in each place & last 4)"
-            )
-            return  
-
-        # Get IP data
+            self.update_result("Wrong Syntax‑Check if syntax is ---- ---- ---- ---- (at least 1 in each place & at last 4)")
+            return
         data = self.get_data(ip)
         if "error" in data:
             self.update_result(data["error"])
-            return
+            self.flag_label.config(image="")
+            return None
         if data.get("status") != "success":
             self.update_result("❌ Invalid IP or data unavailable.")
+            self.flag_label.config(image="")
             return
-
-        # Get flag
         country_code = data.get("countryCode", "")
         flag_image = self.getflag(country_code)
         if flag_image:
-            self.flag_label.config(image=flag_image)
+            self.flag_img = flag_image
+            self.flag_label.config(image=self.flag_img)
         else:
             self.flag_label.config(image="")
-
-        # Display selected fields
         field_map = {
-            "country": "🏳 Country",
-            "regionName": "🗺 Region",
-            "city": "🏙 City",
-            "timezone": "🕓 Timezone",
-            "isp": "💻 ISP",
-            "countryCode": "🌐 Country Code",
-            "continentCode": "🌎 Continent Code",
-            "lat": "📍 Latitude",
-            "lon": "📍 Longitude",
-        }
+                "country": "🏳 Country",
+                "regionName": "🗺 Region",
+                "city": "🏙 City",
+                "timezone": "🕓 Timezone",
+                "isp": "💻 ISP",
+                "countryCode": "🌐 Country Code",
+                "continentCode": "🌎 Continent Code",
+                "lat": "📍 Latitude",
+                "lon": "📍 Longitude",
+                "org":"🚟 Org",
+            }
         output_lines = [f"🌍 IP: {ip}", ""]
         for key, var in self.fields.items():
             if var.get():
@@ -316,3 +324,4 @@ if __name__ == "__main__":
     root = Tk()
     app = IPInfoApp(root)
     root.mainloop()
+# https://api-ninjas-data.s3.us-west-2.amazonaws.com/flags/1x1/IppsSQYW/{countryCode}.svg
