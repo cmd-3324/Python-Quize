@@ -1,7 +1,6 @@
 from tkinter import *
 from requests import get, exceptions
 import re
-from bs4 import *
 from PIL import Image, ImageTk
 import io
 
@@ -12,9 +11,7 @@ class IPInfoApp:
         self.root.title("🌐 IP Info Checker")
         self.root.geometry("480x720")
         self.root.resizable(True, True)
-
-        # Theme states
-        self.dark_mode = True
+        self.dark_mode = False
         self.themes = {
             "dark": {
                 "bg": "#1e1e1e",
@@ -35,15 +32,11 @@ class IPInfoApp:
                 "secondary": "#555555",
             },
         }
-
         self.apply_theme()
-
         self.my_api_key = "http://ip-api.com/json/{ip}"
 
-        # --- Header with Toggle ---
         header = Frame(self.root, bg=self.colors["bg"])
         header.pack(fill=X, pady=(10, 0))
-
         Label(
             header,
             text="🔎 IP Information Finder",
@@ -51,7 +44,6 @@ class IPInfoApp:
             bg=self.colors["bg"],
             fg=self.colors["fg"],
         ).pack(side=LEFT, padx=(20, 0))
-
         self.toggle_btn = Button(
             header,
             text="🌙",
@@ -72,14 +64,10 @@ class IPInfoApp:
             bg=self.colors["bg"],
             fg=self.colors["secondary"],
         ).pack(pady=(5, 0))
-
-        # --- Input Box ---
         entry_frame = Frame(self.root, bg=self.colors["bg"])
         entry_frame.pack(pady=10)
-
         self.entry_var = StringVar()
         self.entry_var.trace("w", self.on_ip_change)
-
         self.entry_term = Entry(
             entry_frame,
             textvariable=self.entry_var,
@@ -97,7 +85,6 @@ class IPInfoApp:
         self.entry_term.pack(ipady=8)
         self.entry_var.set(self.get_own_ip())
 
-        # --- Checkboxes ---
         Label(
             self.root,
             text="Choose details to display:",
@@ -105,10 +92,8 @@ class IPInfoApp:
             bg=self.colors["bg"],
             fg=self.colors["secondary"],
         ).pack(pady=(5, 2))
-
         checkbox_frame = Frame(self.root, bg=self.colors["bg"])
         checkbox_frame.pack(padx=18, pady=(5, 15), fill=X)
-
         self.fields = {
             "country": IntVar(value=1),
             "regionName": IntVar(value=1),
@@ -120,12 +105,10 @@ class IPInfoApp:
             "lat": IntVar(value=0),
             "lon": IntVar(value=0),
         }
-
         col1 = Frame(checkbox_frame, bg=self.colors["bg"])
         col2 = Frame(checkbox_frame, bg=self.colors["bg"])
         col1.pack(side=LEFT, fill=BOTH, expand=True)
         col2.pack(side=LEFT, fill=BOTH, expand=True)
-
         self.check_buttons = []
         for i, (key, var) in enumerate(self.fields.items()):
             parent = col1 if i % 2 == 0 else col2
@@ -145,7 +128,6 @@ class IPInfoApp:
             chk.pack(fill=X, padx=8, pady=2)
             self.check_buttons.append(chk)
 
-        # --- Button ---
         self.check_btn = Button(
             self.root,
             text="Check IP Info",
@@ -161,17 +143,12 @@ class IPInfoApp:
         )
         self.check_btn.pack(pady=(5, 12))
 
-        # --- Result + Flag side-by-side ---
         main_result_frame = Frame(self.root, bg=self.colors["bg"])
         main_result_frame.pack(padx=15, fill=BOTH, expand=True)
-
-        # Text area
         result_frame = Frame(main_result_frame, bg=self.colors["bg"])
         result_frame.pack(side=LEFT, fill=BOTH, expand=True)
-
         scrollbar = Scrollbar(result_frame)
         scrollbar.pack(side=RIGHT, fill=Y)
-
         self.result_box = Text(
             result_frame,
             font=("Consolas", 11),
@@ -189,8 +166,6 @@ class IPInfoApp:
         self.result_box.config(state=DISABLED)
         self.result_box.pack(fill=BOTH, expand=True)
         scrollbar.config(command=self.result_box.yview)
-
-        # Flag area (right side)
         self.flag_label = Label(main_result_frame, bg=self.colors["bg"])
         self.flag_label.pack(side=RIGHT, padx=20, pady=20)
 
@@ -202,7 +177,6 @@ class IPInfoApp:
             fg=self.colors["secondary"],
         ).pack(pady=(6, 10))
 
-    # ---------- Theme Switch ----------
     def apply_theme(self):
         mode = "dark" if getattr(self, "dark_mode", True) else "light"
         self.colors = self.themes[mode]
@@ -215,7 +189,6 @@ class IPInfoApp:
         self.toggle_btn.config(
             text=new_icon, fg=self.colors["accent"], bg=self.colors["bg"]
         )
-        # Update all widgets' colors
         for widget in self.root.winfo_children():
             try:
                 widget.config(bg=self.colors["bg"], fg=self.colors["fg"])
@@ -244,11 +217,9 @@ class IPInfoApp:
         self.check_btn.config(bg=self.colors["accent"])
         self.flag_label.config(bg=self.colors["bg"])
 
-    # ---------- Smart IP Formatter ----------
     def on_ip_change(self, *args):
         pass
 
-    # ---------- Networking ----------
     def get_data(self, ip: str):
         try:
             url = self.my_api_key.format(ip=ip)
@@ -269,42 +240,37 @@ class IPInfoApp:
             return ""
 
     def getflag(self, countryCode):
-          
         try:
             if not countryCode:
-                print("No country code provided.")
                 return None
-
-            url = f"https://api.api-ninjas.com/v1/countryflag?country={countryCode}"
-            headers = {"X-Api-Key": "/lthk+c+HlNj6GLl1+L8+g==woNcBuc0q6p2hmeS"}
-
-            response = get(url, headers=headers, timeout=10)
+            code = countryCode.strip().lower()
+            api_url = "https://api.api-ninjas.com/v1/countryflag?country={}".format(
+                code
+            )
+            response = get(api_url, headers={'X-Api-Key': '/lthk+c+HlNj6GLl1+L8+g==woNcBuc0q6p2hmeS'})
             if response.status_code != 200:
-                print("Flag API error:", response.status_code, response.text)
                 return None
-
-            data = response.json()
-            if "error" in data:
-                print("Flag API returned error:", data["error"])
-                return None
-
-            flag_url = data.get("image_url") or data.get("square_image_url")
-            print("Flag URL fetched:", flag_url)
-            return flag_url
-
-        except exceptions.RequestException as e:
-            print("Network error while fetching flag:", e)
-            return None
-        except Exception as e:
-            print("Unexpected flag fetch error:", e)
+            img = Image.open(io.BytesIO(response.content))
+            img = img.resize((100, 60), Image.ANTIALIAS)
+            photo = ImageTk.PhotoImage(img)
+            return photo
+        except:
             return None
 
     def check_ip(self):
         ip = self.entry_var.get().strip()
+
         if not re.match(r"^\d{1,3}(\.\d{1,3}){3}$", ip):
             self.update_result("⚠️ Please enter a valid IPv4 address (e.g. 8.8.8.8)")
             return
+        wastchars = any(c in "!@#$~_+,>?<}{\\/-=" for c in ip)
+        if wastchars:
+            self.update_result(
+                "❌ Wrong Syntax: check if syntax is ---- ---- ---- ---- (at least 1 in each place & last 4)"
+            )
+            return  
 
+        # Get IP data
         data = self.get_data(ip)
         if "error" in data:
             self.update_result(data["error"])
@@ -313,6 +279,15 @@ class IPInfoApp:
             self.update_result("❌ Invalid IP or data unavailable.")
             return
 
+        # Get flag
+        country_code = data.get("countryCode", "")
+        flag_image = self.getflag(country_code)
+        if flag_image:
+            self.flag_label.config(image=flag_image)
+        else:
+            self.flag_label.config(image="")
+
+        # Display selected fields
         field_map = {
             "country": "🏳 Country",
             "regionName": "🗺 Region",
@@ -324,27 +299,11 @@ class IPInfoApp:
             "lat": "📍 Latitude",
             "lon": "📍 Longitude",
         }
-
         output_lines = [f"🌍 IP: {ip}", ""]
         for key, var in self.fields.items():
             if var.get():
                 output_lines.append(f"{field_map[key]}: {data.get(key, 'N/A')}")
-
-        # Update details text
         self.update_result("\n".join(output_lines))
-
-        # --- Display flag next to details ---
-        country_code = data.get("countryCode", "")
-        flag_url = self.getflag(country_code)
-        if flag_url:
-            try:
-                img_data = get(flag_url, timeout=5).content
-                img = Image.open(io.BytesIO(img_data))
-                img = img.resize((100, 60))  # specific flag size
-                self.flag_img = ImageTk.PhotoImage(img)
-                self.flag_label.config(image=self.flag_img)
-            except Exception as e:
-                print("Flag display error:", e)
 
     def update_result(self, text):
         self.result_box.config(state=NORMAL)
