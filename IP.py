@@ -27,13 +27,16 @@ class IPInfoApp:
                 "bg": "#f7f9fc",
                 "fg": "#1c1c1c",
                 "accent": "#1976D2",
-                "text_bg": "#000000",
+                "text_bg": "#DBDBDB",
                 "text_fg": "#FFFFFF",
                 "border": "#cccccc",
                 "secondary": "#555555",
             },
         }
         self.apply_theme()
+        # The line `self.my_api_key = "http://ip-api.com/json/{ip}"` is initializing a class attribute
+        # `my_api_key` with a string value. This string is a URL template that will be used to make
+        # API requests to retrieve information about a specific IP address.
         self.my_api_key = "http://ip-api.com/json/{ip}"
 
         header = Frame(self.root, bg=self.colors["bg"])

@@ -18,22 +18,22 @@ import bs4 as beatifulSoup
 # print("Your passcode is : " , password)
 # print("Time taken : ", clock)
 
-class InputExtraction:
-    def __init__(self,url):
-        self.url = url
-        # self.tagname = tagname
-    def accessTag(self):
-        respones = rq.get(self.url)
-        html = beatifulSoup.BeautifulSoup(respones.text, "html.parser")
-        #at least we can add 7 ids to check tags , hold on method to see for a few secodns
-        x = html.find_all("a",string="", class_="gb1")
-        s = 0
-        for times in x:
-             s +=1
-             #len is also can be used here for iterration prevnetion
-        print(x,"\n","Times is :",s ,end=" ")
-test = InputExtraction("https://google.com")
-test.accessTag()
+# class InputExtraction:
+#     def __init__(self,url):
+#         self.url = url
+#         # self.tagname = tagname
+#     def accessTag(self):
+#         respones = rq.get(self.url)
+#         html = beatifulSoup.BeautifulSoup(respones.text, "html.parser")
+#         #at least we can add 7 ids to check tags , hold on method to see for a few secodns
+#         x = html.find_all("a",string="", class_="gb1")
+#         s = 0
+#         for times in x:
+#              s +=1
+#              #len is also can be used here for iterration prevnetion
+#         print(x,"\n","Times is :",s ,end=" ")
+# test = InputExtraction("https://google.com")
+# test.accessTag()
 
 # from fpdf import FPDF
 
@@ -197,3 +197,104 @@ test.accessTag()
 # output_path = "Python_One_Liner_Mastery_Full.pdf"
 # pdf.output(output_path)
 # print(f"✅ PDF generated successfully: {output_path}")
+from fpdf import FPDF
+
+pdf = FPDF()
+pdf.add_page()
+pdf.set_auto_page_break(auto=True, margin=15)
+
+pdf.set_font("Arial", "B", 16)
+pdf.cell(0, 10, "Python Video Downloader - Developer Reference", ln=True, align="C")
+
+pdf.ln(10)
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "1. Algorithm Overview", ln=True)
+pdf.set_font("Arial", "", 12)
+pdf.multi_cell(
+    0,
+    8,
+    (
+        "1. User inputs URL of the video.\n"
+        "2. Validate the URL.\n"
+        "3. Identify source (YouTube, Instagram, etc.)\n"
+        "4. Fetch video metadata (title, duration, available qualities).\n"
+        "5. Display available options to the user.\n"
+        "6. User selects quality/format.\n"
+        "7. Download video using source-specific library/API.\n"
+        "8. Save video locally.\n"
+        "9. Optionally allow resuming or multiple downloads.\n"
+    ),
+)
+
+pdf.ln(5)
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "2. Pseudocode", ln=True)
+pdf.set_font("Arial", "", 12)
+pdf.multi_cell(
+    0,
+    8,
+    (
+        "function download_video(url):\n"
+        "    if not validate_url(url):\n"
+        "        return 'Invalid URL'\n"
+        "    source = detect_source(url)\n"
+        "    metadata = fetch_metadata(source, url)\n"
+        "    display_options(metadata)\n"
+        "    choice = user_select_quality()\n"
+        "    video_data = download(source, url, choice)\n"
+        "    save_video(video_data)\n"
+        "    return 'Download Complete'\n"
+    ),
+)
+
+pdf.ln(5)
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "3. Flowchart (Conceptual)", ln=True)
+pdf.set_font("Arial", "", 12)
+pdf.multi_cell(
+    0,
+    8,
+    (
+        "[User Input URL] --> [Validate URL]\n"
+        "          |\n"
+        "          v\n"
+        "      [Detect Source]\n"
+        "          |\n"
+        "          v\n"
+        "   [Fetch Metadata]\n"
+        "          |\n"
+        "          v\n"
+        "   [Display Options]\n"
+        "          |\n"
+        "          v\n"
+        "   [User Selects Quality]\n"
+        "          |\n"
+        "          v\n"
+        "   [Download Video]\n"
+        "          |\n"
+        "          v\n"
+        "      [Save Video]\n"
+        "          |\n"
+        "          v\n"
+        "   [Download Complete]\n"
+    ),
+)
+
+pdf.ln(5)
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "4. Notes and References", ln=True)
+pdf.set_font("Arial", "", 12)
+pdf.multi_cell(
+    0,
+    8,
+    (
+        "- YouTube: pytube or yt_dlp libraries\n"
+        "- Instagram: instaloader or yt_dlp\n"
+        "- Other platforms: investigate source-specific APIs\n"
+        "- Handle errors, retries, and invalid URLs gracefully\n"
+        "- Can extend to choose formats (mp4, mp3) and quality\n"
+    ),
+)
+
+pdf.output("video_downloader_reference.pdf")
+print("PDF generated as 'video_downloader_reference.pdf'")

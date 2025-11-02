@@ -1,18 +1,17 @@
 from tkinter import *
 from requests import get, exceptions
 import re
-from bs4 import *
 from PIL import Image, ImageTk
 import io
+
 
 class IPInfoApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("🌐 IP Info Checker")
+        self.root.title("🌐 Country Info Checker")
         self.root.geometry("480x720")
         self.root.resizable(True, True)
 
-        # Theme states
         self.dark_mode = True
         self.themes = {
             "dark": {
@@ -36,10 +35,17 @@ class IPInfoApp:
         }
 
         self.apply_theme()
+        self.my_api_key_alpha = "https://restcountries.com/v3.1/alpha/{code}"
+        self.my_api_key_name = "https://restcountries.com/v3.1/name/{name}"
+        self.COUNTRY_CODES = {
+            "iran": "IR",
+            "united states": "US",
+            "france": "FR",
+            "germany": "DE",
+            "japan": "JP",
+            "china": "CN",
+        }
 
-        self.my_api_key = "http://ip-api.com/json/{ip}"
-
-        # --- Header with Toggle ---
         header = Frame(self.root, bg=self.colors["bg"])
         header.pack(fill=X, pady=(10, 0))
 
@@ -72,7 +78,6 @@ class IPInfoApp:
             fg=self.colors["secondary"],
         ).pack(pady=(5, 0))
 
-        # --- Input Box ---
         entry_frame = Frame(self.root, bg=self.colors["bg"])
         entry_frame.pack(pady=10)
 
@@ -94,9 +99,8 @@ class IPInfoApp:
             highlightthickness=1.5,
         )
         self.entry_term.pack(ipady=8)
-        self.entry_var.set(self.get_own_ip())
+        self.entry_var.set("Iran")
 
-        # --- Checkboxes ---
         Label(
             self.root,
             text="Choose details to display:",
@@ -112,11 +116,9 @@ class IPInfoApp:
             "country": IntVar(value=1),
             "Capital": IntVar(value=1),
             "timezone": IntVar(value=1),
-            "isp": IntVar(value=1),
             "countryCode": IntVar(value=1),
+            "official": IntVar(value=0),
             "continentCode": IntVar(value=1),
-           
-       
         }
 
         col1 = Frame(checkbox_frame, bg=self.colors["bg"])
@@ -127,9 +129,10 @@ class IPInfoApp:
         self.check_buttons = []
         for i, (key, var) in enumerate(self.fields.items()):
             parent = col1 if i % 2 == 0 else col2
+            label_text = "Government" if key == "official" else key.capitalize()
             chk = Checkbutton(
                 parent,
-                text=key.capitalize(),
+                text=label_text,
                 variable=var,
                 bg=self.colors["bg"],
                 fg=self.colors["fg"],
@@ -143,7 +146,6 @@ class IPInfoApp:
             chk.pack(fill=X, padx=8, pady=2)
             self.check_buttons.append(chk)
 
-        # --- Button ---
         self.check_btn = Button(
             self.root,
             text="Check Country Info",
@@ -158,14 +160,14 @@ class IPInfoApp:
             command=self.check_ip,
         )
         self.check_btn.pack(pady=(5, 12))
+        self.flag_label = Label(self.root, bg=self.colors["bg"])
+        self.flag_label.pack(pady=10)
 
-        # --- Result Box ---
         result_frame = Frame(self.root, bg=self.colors["bg"])
         result_frame.pack(padx=15, fill=BOTH, expand=True)
 
         scrollbar = Scrollbar(result_frame)
         scrollbar.pack(side=RIGHT, fill=Y)
-
         self.result_box = Text(
             result_frame,
             font=("Consolas", 11),
@@ -179,6 +181,7 @@ class IPInfoApp:
             insertbackground=self.colors["fg"],
             yscrollcommand=scrollbar.set,
         )
+
         self.result_box.insert(END, "ℹ️ Result will appear here.")
         self.result_box.config(state=DISABLED)
         self.result_box.pack(fill=BOTH, expand=True)
@@ -186,13 +189,12 @@ class IPInfoApp:
 
         Label(
             self.root,
-            text="Powered by ip-api.com",
+            text="Powered by restcountries.com And Junior-PRogrammer Me!😏",
             font=("Segoe UI", 8),
             bg=self.colors["bg"],
             fg=self.colors["secondary"],
         ).pack(pady=(6, 10))
 
-    # ---------- Theme Switch ----------
     def apply_theme(self):
         mode = "dark" if getattr(self, "dark_mode", True) else "light"
         self.colors = self.themes[mode]
@@ -202,8 +204,9 @@ class IPInfoApp:
         self.dark_mode = not self.dark_mode
         self.apply_theme()
         new_icon = "🌞" if not self.dark_mode else "🌙"
-        self.toggle_btn.config(text=new_icon, fg=self.colors["accent"], bg=self.colors["bg"])
-        # Update all widgets' colors
+        self.toggle_btn.config(
+            text=new_icon, fg=self.colors["accent"], bg=self.colors["bg"]
+        )
         for widget in self.root.winfo_children():
             try:
                 widget.config(bg=self.colors["bg"], fg=self.colors["fg"])
@@ -231,51 +234,53 @@ class IPInfoApp:
         )
         self.check_btn.config(bg=self.colors["accent"])
 
-    # ---------- Smart IP Formatter ----------
     def on_ip_change(self, *args):
         pass
-    # ---------- Networking ----------
-    def get_data(self, ip: str):
+
+    def get_data(self, country_input: str):
         try:
-            url = self.my_api_key.format(ip=ip)
-            res = get(url, timeout=8)
-            res.raise_for_status()
-            return res.json()
+            country_input = country_input.strip().lower()
+            country_code = self.COUNTRY_CODES.get(country_input, None)
+            if country_code:
+                url = self.my_api_key_alpha.format(code=country_code)
+                res = get(url, timeout=8)
+                res.raise_for_status()
+                data = res.json()[0]
+            else:
+                url = self.my_api_key_name.format(name=country_input)
+                res = get(url, timeout=8)
+                res.raise_for_status()
+                data = res.json()[0]
+
+            return {
+                "country": data.get("name", {}).get("common", "N/A"),
+                "Capital": data.get("capital", ["N/A"])[0],
+                "continentCode": data.get("region", "N/A"),
+                "countryCode": data.get("cca2", "N/A"),
+                "timezone": data.get("timezones", ["N/A"])[0],
+                "official": data.get("name", {}).get("official", "N/A"),
+            }
+
         except exceptions.RequestException as e:
-            return {"error": f"🚫 Network Error:\n \n{e}"}
+            return {"error": f"🚫 Network Error:\n{e}"}
+        except IndexError:
+            return {"error": "❌ Country not found"}
         except Exception as e:
             return {"error": f"⚠️ Error:\n{e}"}
-
-    def get_own_ip(self):
-        try:
-            res = get("https://api.ipify.org?format=json", timeout=5)
-            res.raise_for_status()
-            ip = res.json().get("ip", "")
-            if not ip:
-                return ""
-            data = self.get_data(ip)
-            return data.get("country", "")
-        except Exception:
-            return ""
-
+        #flag finding system 
     def getflag(self, countryCode):
         try:
             if not countryCode:
                 return None
 
             code = countryCode.strip().lower()
-            url = f"https://flagcdn.com/w80/{code}.png"
+            url = f"https://flagcdn.com/w320/{code}.png"
 
             response = get(url, timeout=5)
-            response.raise_for_status()  # Raise an exception for non-200 responses
-
-            # Open image from bytes
+            response.raise_for_status()
             img = Image.open(io.BytesIO(response.content))
 
-            # Resize with LANCZOS (replaces deprecated ANTIALIAS)
-            img = img.resize((100, 60), Image.LANCZOS)
-
-            # Convert to PhotoImage for Tkinter
+            img = img.resize((150, 90), Image.LANCZOS)
             photo = ImageTk.PhotoImage(img)
             return photo
 
@@ -288,32 +293,44 @@ class IPInfoApp:
 
     def check_ip(self):
         country = self.entry_var.get().strip()
-        if not re.match(r"^[A-Za-z\s\-]{1,18}$", country):
-            self.update_result("⚠️ Please enter a valid Country Code/Name(eg.Iran-IR-IraN,..)")
+        if not re.match(r"^[A-Za-z\s\-]{1,50}$", country):
+            self.update_result("⚠️ Please enter a valid Country name or code")
             return
 
         data = self.get_data(country)
         if "error" in data:
             self.update_result(data["error"])
             return
-        if data.get("status") != "success":
-            self.update_result("❌ Given data unavailable or Invalid.")
-            return
+
         field_map = {
             "country": "🏳 Country",
-            "regionName": "🗺 Capital",
-            "city": "🏙 City",
+            "Capital": "🗺 Capital",
             "timezone": "🕓 Timezone",
             "countryCode": "🌐 Country Code",
             "continentCode": "🌎 Continent Code",
+            "official": "🏛️Govermnet-Type",
         }
 
         output_lines = [f"🌍 Info Of: {country}", ""]
         for key, var in self.fields.items():
             if var.get():
                 output_lines.append(f"{field_map[key]}: {data.get(key, 'N/A')}")
-        self.update_result("\n".join(output_lines))
 
+        self.flag_photo = self.getflag(data.get("countryCode"))
+        self.result_box.config(state=NORMAL)
+        self.result_box.delete(1.0, END)
+        for line in output_lines:
+            self.result_box.insert(END, line + "\n")
+
+        if self.flag_photo:
+            self.result_box.insert(END, "\n")
+            self.result_box.image_create(END, image=self.flag_photo)
+            self.result_box.insert(END, "\n")
+        else:
+            self.result_box.insert(END, "\nNo flag available\n")
+
+        self.result_box.config(state=DISABLED)
+    
     def update_result(self, text):
         self.result_box.config(state=NORMAL)
         self.result_box.delete(1.0, END)
