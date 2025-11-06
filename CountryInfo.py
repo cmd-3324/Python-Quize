@@ -11,12 +11,13 @@ class IPInfoApp:
         self.root.title("🌐 Country Info Checker")
         self.root.geometry("480x720")
         self.root.resizable(True, True)
-
         self.dark_mode = True
         self.themes = {
             "dark": {
                 "bg": "#1e1e1e",
                 "fg": "#f0f0f0",
+                "fgtrans": "f0f0f0",
+                "trans": "1e1e1e",
                 "accent": "#4CAF50",
                 "text_bg": "#2b2b2b",
                 "text_fg": "#ffffff",
@@ -24,6 +25,8 @@ class IPInfoApp:
                 "secondary": "#cccccc",
             },
             "light": {
+                "fgtrans": "1c1c1c",
+                "trans": "f7f9fc",
                 "bg": "#f7f9fc",
                 "fg": "#1c1c1c",
                 "accent": "#1976D2",
@@ -33,7 +36,15 @@ class IPInfoApp:
                 "secondary": "#555555",
             },
         }
-
+        self.transparencyBtn = Button(
+            root,
+            relief=FLAT,
+            bg=self.colors["trans"],
+            fg=self.colors["fgtrans"],
+            font=("Segoe UI", 20, "bold"),
+            text="Set",
+            textvariable="transparencyBtn",
+        ).pack()
         self.apply_theme()
         self.my_api_key_alpha = "https://restcountries.com/v3.1/alpha/{code}"
         self.my_api_key_name = "https://restcountries.com/v3.1/name/{name}"
@@ -48,9 +59,10 @@ class IPInfoApp:
 
         header = Frame(self.root, bg=self.colors["bg"])
         header.pack(fill=X, pady=(10, 0))
+        Label(header, text="Set Transparency", font=("Segoe UI", 14, "italic")).pack(side=RIGHT,padx=(20,10))
 
         Label(
-            header,
+           
             text="🔎 Country Info Finder",
             font=("Segoe UI", 16, "bold"),
             bg=self.colors["bg"],
@@ -234,6 +246,10 @@ class IPInfoApp:
         )
         self.check_btn.config(bg=self.colors["accent"])
 
+    def formatErrormessage(self, message, phrase1, phrase2):
+        foramted = str(message).replace(phrase1, phrase2)
+        return foramted
+
     def on_ip_change(self, *args):
         pass
 
@@ -262,12 +278,21 @@ class IPInfoApp:
             }
 
         except exceptions.RequestException as e:
-            return {"error": f"🚫 Network Error:\n{e}"}
+            formated = self.formatErrormessage(
+                f"404 Client Error: Not Found for url: https://restcountries.com/v3.1/name/'{country_input}'",
+                "Not Found for url: https://restcountries.com/v3.1/name/",
+                "",
+            )
+            return {"error": f"🚫 Network Error:\n{formated}"}
+
         except IndexError:
             return {"error": "❌ Country not found"}
+        except exceptions.RequestException as e:
+            return {"error": f"❌⚠️Requset error :\n {e}"}
         except Exception as e:
             return {"error": f"⚠️ Error:\n{e}"}
-        #flag finding system 
+        # flag finding system
+
     def getflag(self, countryCode):
         try:
             if not countryCode:
@@ -294,7 +319,7 @@ class IPInfoApp:
     def check_ip(self):
         country = self.entry_var.get().strip()
         if not re.match(r"^[A-Za-z\s\-]{1,50}$", country):
-            self.update_result("⚠️ Please enter a valid Country name or code")
+            self.update_result("⚠️ Please enter a valid Country name or code(e.g-Iran-IR)")
             return
 
         data = self.get_data(country)
@@ -330,7 +355,7 @@ class IPInfoApp:
             self.result_box.insert(END, "\nNo flag available\n")
 
         self.result_box.config(state=DISABLED)
-    
+
     def update_result(self, text):
         self.result_box.config(state=NORMAL)
         self.result_box.delete(1.0, END)
@@ -338,7 +363,7 @@ class IPInfoApp:
         self.result_box.config(state=DISABLED)
 
 
-if __name__ == "__main__":
-    root = Tk()
-    app = IPInfoApp(root)
-    root.mainloop()
+# if __name__ == "__main__":
+root = Tk()
+app = IPInfoApp(root)
+root.mainloop()
